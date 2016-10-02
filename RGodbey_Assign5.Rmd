@@ -1,0 +1,139 @@
+---
+title: "DATA (IS) 605 FUNDAMENTALS OF COMPUTATIONAL MATHEMATICS - FALL 2016 - ASSIGNMENT 5"
+author: "Robert Godbey"
+date: "September 30, 2016"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: true
+    theme: readable
+    highlight: espresso
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem Set 1
+
+### (1) Work out some properties of the least squares solution
+
+Consider the unsolvable system Ax = b as given below:
+
+$\left[ \begin{array}{ccc} 1 & 0 \\ 1 & 1 \\ 1 & 3 \\ 1 & 4 \\ \end{array}\right]$
+$\left[ \begin{array}{ccc} x_1 \\ x_2 \\ \end{array}\right] =$
+$\left[ \begin{array}{ccc} 0 \\ 8 \\ 8 \\ 20 \\ \end{array}\right]$
+
+#### a) Use R to compute $A^TA$ and $A^Tb$
+
+```{r trans}
+A <- matrix(c(1, 1, 1, 1, 0, 1, 3, 4), nrow=4)
+b <- matrix(c(0, 8, 8, 20), nrow=4)
+ata <- t(A) %*% A
+ata
+atb <- t(A) %*% b
+atb
+```
+
+
+#### b) Solve for $\hat{x}$ in R using the above two computed matrices
+
+Since $A^TA\hat{x} = A^Tb$ this give us 
+$\left[ \begin{array}{ccc} 4 & 8 \\ 8 & 26 \\ \end{array}\right] \hat{x} =$
+$\left[ \begin{array}{ccc} 36 \\ 112 \\ \end{array}\right] b$
+
+You can use elimination and solve $4x_1 + 8x_2 = 36$  and $8x_1 + 26x_2 = 112$ to find $\hat{x} =$
+$\left[ \begin{array}{ccc} 1 \\ 4 \\ \end{array}\right]$
+
+We can also use $A^TA\hat{x} = A^Tb$ and algebra to get $\hat{x} = A^Tb / A^TA = A^Tb (A^TA)^{-1}$, which won't work because the matrices don't align, however $\hat{x} = (A^TA)^{-1} A^Tb$ does give 
+$\left[ \begin{array}{ccc} 1 \\ 4 \\ \end{array}\right]$ (see below). I'm not sure why.
+
+Also, if we use the R function solve on $A^TA$ and $A^Tb$ we get $\hat{x} =$
+$\left[ \begin{array}{ccc} 1 \\ 4 \\ \end{array}\right]$ (see below).
+
+```{r xhat}
+invata <- solve(ata)
+xhat <- invata %*% atb
+xhat
+solve(ata, atb)
+```
+
+
+#### c) What is the squared error of this solution?
+
+$E = ||Ax - b||^2 = \left[ \begin{array}{ccc} 1 \\ -3 \\ 5 \\ -3 \\ \end{array}\right]$ for $x = \left[ \begin{array}{ccc} 1 \\ 4 \\ \end{array}\right]$
+
+#### d) Instead of b = [0; 8; 8; 20], start with p = [1; 5; 13; 17] and find the exact solution
+
+The system Ax = p is given below:
+
+$\left[ \begin{array}{ccc} 1 & 0 \\ 1 & 1 \\ 1 & 3 \\ 1 & 4 \\ \end{array}\right]$
+$\left[ \begin{array}{ccc} x_1 \\ x_2 \\ \end{array}\right] =$
+$\left[ \begin{array}{ccc} 1 \\ 5 \\ 13 \\ 17 \\ \end{array}\right]$
+
+which is solved by $x_1 = 1, x_2 =4$
+
+```{r xact}
+p <- matrix(c(1, 5, 13, 17), nrow=4)
+atp <- t(A) %*% p
+atp
+solve(ata, atp)
+```
+
+
+#### e) Show that the error e = b - p = [-1, 3, -5, 3]
+
+$b = \left[ \begin{array}{ccc} 0 \\ 8 \\ 8 \\ 20 \\ \end{array}\right]$
+
+$p = \left[ \begin{array}{ccc} 1 \\ 5 \\ 13 \\ 17 \\ \end{array}\right]$
+
+$b - p = \left[ \begin{array}{ccc} 0 - 1 \\ 8 - 5 \\ 8 - 13 \\ 20 - 17 \\ \end{array}\right] =$
+$\left[ \begin{array}{ccc} -1 \\ 3 \\ -5 \\ 3 \\ \end{array}\right]$
+
+```{r err}
+e = b - p
+e
+```
+
+
+#### f) Show that the error e is orthogonal to p and to each of the columns of A
+
+Two vectors are orthogonal when their dot product is zero: $\mathbf{v} \cdot \mathbf{w} = 0$ or 
+$\mathbf{v}^T \mathbf{w} = 0$
+
+```{r serr}
+t(e) %*% p
+t(e) %*% A[,1]
+t(e) %*% A[,2]
+```
+
+
+## Problem Set 2
+
+### Write an R markdown script that takes in the auto-mpg data, extracts an A matrix from the first 4 columns and b vector from the fifth (mpg) column.
+
+
+```{r mpg}
+dfrm <- read.table("C:/Users/robgo/Documents/CUNY/2016-2-Fall-IS605-Comp-Math/Week5/auto-mpg.data")
+A <- matrix(0, 392, 4)
+A[,1] <- dfrm$V1
+A[,2] <- dfrm$V2
+A[,3] <- dfrm$V3
+A[,4] <- dfrm$V4
+b <- dfrm$V5
+head(A)
+tail(A)
+head(b)
+tail(b)
+```
+
+
+### calculate the fitting error between the predicted mpg of your model and the actual mpg
+
+```{r fit}
+ata <- t(A) %*% A
+atb <- t(A) %*% b
+solve(ata, atb)
+```
+
+
